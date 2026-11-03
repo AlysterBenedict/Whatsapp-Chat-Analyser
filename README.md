@@ -1,4 +1,4 @@
-# WhatsApp Chat Analyzer 💬📊
+# WhatsApp Chat Analyzer
 
 A fast, privacy-first, zero-dependency analytics dashboard and visualization engine for WhatsApp conversations. Works seamlessly with both **Android** and **iOS** chat exports, dynamically detecting participants, calculating conversation rhythms, reply latency, streak records, word frequencies, and emoji habits.
 
@@ -6,18 +6,18 @@ Deployed live on Firebase: **[https://whatsapp-chat-analyzer-7509c.web.app](http
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-- **🔒 100% Client-Side & Privacy-First**: Your chats never leave your computer. All parsing, text processing, and analytics happen directly inside your web browser memory.
-- **👥 Dynamic Participant Detection**: Automatically identifies any participants from the uploaded export file—works for both 1-on-1 conversations and group chats without hardcoded names.
-- **⚡ Instant Drag-and-Drop & Clipboard Paste**:
+- **100% Client-Side & Privacy-First**: Your chats never leave your computer. All parsing, text processing, and analytics happen directly inside your web browser memory.
+- **Dynamic Participant Detection**: Automatically identifies any participants from the uploaded export file—works for both 1-on-1 conversations and group chats without hardcoded names.
+- **Instant Drag-and-Drop & Clipboard Paste**:
   - Drag and drop any WhatsApp `.txt` export directly onto the browser window.
   - Or simply copy the chat file/text and press `Ctrl + V` anywhere on the page.
-- **📱 Universal WhatsApp Format Support**:
+- **Universal WhatsApp Format Support**:
   - **Android format**: `12/03/24, 9:45 pm - Name: Message`
   - **iOS format**: `[12/03/24, 09:45:12 PM] Name: Message`
   - Handles 12-hour (AM/PM) and 24-hour clocks, multi-line messages, attachments, media omission flags, and invisible Unicode direction marks (LRM/RLM).
-- **📈 Comprehensive Metrics & Deep Insights**:
+- **Comprehensive Metrics & Deep Insights**:
   - **Overall KPIs**: Total messages, words exchanged, messages per day, active chatting days, longest streak, peak chat hour.
   - **Activity & Rhythm**:
     - *Hour-by-hour distribution* (stacked bars showing day/night patterns).
@@ -32,16 +32,16 @@ Deployed live on Firebase: **[https://whatsapp-chat-analyzer-7509c.web.app](http
     - Top 12 most frequently used words per participant.
     - Top 10 most popular emojis with frequency counts.
     - Average words and characters per message.
-- **🎨 WhatsApp Design Language**:
+- **WhatsApp Design Language**:
   - Solid ribbon navbar featuring the official WhatsApp brand aesthetic.
   - Interactive Light & Dark theme toggle with persistent preference.
   - Sleek, modern typography with responsive card layouts.
-- **💾 Standalone Single-File HTML Export**:
+- **Standalone Single-File HTML Export**:
   - Click **"Export HTML"** to download a self-contained `.html` file that bundles all CSS, JavaScript, and parsed chat data. Share or archive offline reports without needing a server.
 
 ---
 
-## 🛠️ Methodology & Technical Architecture
+## Methodology & Technical Architecture
 
 The WhatsApp Chat Analyzer is engineered with **zero external runtime dependencies** (no bulky frontend frameworks, no heavy chart libraries). It loads instantly and executes with maximum performance.
 
@@ -97,7 +97,7 @@ Instead of bundling multi-megabyte JavaScript charting libraries, all charts (ti
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 .
@@ -112,7 +112,7 @@ Instead of bundling multi-megabyte JavaScript charting libraries, all charts (ti
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Option 1: Live Web App (No Installation Needed)
 Visit the live hosted app: **[https://whatsapp-chat-analyzer-7509c.web.app](https://whatsapp-chat-analyzer-7509c.web.app)**
@@ -138,7 +138,7 @@ This will automatically launch the local dashboard at `http://localhost:8000`.
 
 ---
 
-## 📲 How to Export Your WhatsApp Chat
+## How to Export Your WhatsApp Chat
 
 1. Open WhatsApp on your phone and open the chat you want to analyze.
 2. Tap the chat name or menu (`⋮` on Android, tap name on iOS).
@@ -148,7 +148,7 @@ This will automatically launch the local dashboard at `http://localhost:8000`.
 
 ---
 
-## 🔒 Privacy & Security
+## Privacy & Security
 
 - **Zero Cloud Storage**: Chat messages and participant names are **never** transmitted to any server or remote database.
 - **Client-Side Execution**: All processing executes within your browser's local sandbox memory.
@@ -156,6 +156,6 @@ This will automatically launch the local dashboard at `http://localhost:8000`.
 
 ---
 
-## 📄 License
+## License
 
 MIT License. Free for personal and educational use.
