@@ -4,7 +4,7 @@
     python run.py            # analyse only when the results are missing or out of date
     python run.py --refresh  # force a fresh analysis
 
-Keep this file next to: the chat .txt (or in Results_Pipeline), analyze_chat.py, index.html, style.css, app.js.
+Keep this file next to: the chat .txt (or in Code), analyze_chat.py, index.html, style.css, app.js.
 """
 import json
 import re

@@ -493,7 +493,7 @@ ${cssText}
   <div id="state" class="loading-state glass" style="display:none"></div>
   <div id="out"></div>
   <footer class="footer">
-    <p>Everything runs on your computer. Your chat never leaves it. Exported ${new Date().toLocaleDateString()}</p>
+    <p><strong>Privacy Assurance:</strong> The deployed app is 100% client-side. When visitors drag, drop, or paste a WhatsApp chat .txt file, all analysis happens in their browser memory; no personal chat messages or data are ever transmitted to or stored on any server.</p>
   </footer>
 </main>
 <script>

@@ -725,4 +725,11 @@ tr:last-child td { border-bottom: none; }
 .footer p {
   color: var(--page-text-muted);
   font-size: 0.875rem;
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+.footer strong {
+  color: var(--page-text);
+  font-weight: 600;
 }
