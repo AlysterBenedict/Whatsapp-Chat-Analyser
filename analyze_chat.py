@@ -369,6 +369,11 @@ def analyze(msgs, reply_cap_h, session_gap_h, top_n, extra_stop):
             "peak_weekday": WEEKDAYS[max(range(7), key=lambda d: overall_wd[d])],
             "busiest_month": monthly_total.most_common(1)[0],
             "reply_cap_hours": reply_cap_h, "session_gap_hours": session_gap_h,
+            "total_chat_hours": sum(
+                min((msgs[i].dt - msgs[i-1].dt).total_seconds(), session_gap)
+                for i in range(1, len(msgs))
+                if (msgs[i].dt - msgs[i-1].dt).total_seconds() <= session_gap
+            ) / 3600,
         },
         "per_sender": per,
         "hourly": hourly, "weekday": weekday,
@@ -412,6 +417,9 @@ def print_report(res, load_info, file_name):
     print(f"Active days   : {ov['active_days']} of {ov['span_days']}   (silent days: {ov['silent_days']})")
     if load_info["missed_calls"]:
         print(f"Missed calls  : {load_info['missed_calls']}")
+    total_h = ov.get("total_chat_hours")
+    if total_h is not None:
+        print(f"Hours chatting: {total_h:,.1f} h  (~{total_h/24:.1f} days of active chat time)")
 
     banner("PER PERSON")
     metrics = [

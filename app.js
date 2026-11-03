@@ -290,7 +290,8 @@ function render(d, daily) {
     [nf(O.messages_per_day), 'messages a day'],
     [(O.active_days || 0) + ' of ' + (O.span_days || 0), 'days with messages'],
     [(O.longest_daily_streak || 0) + ' days', 'longest streak'],
-    [hh(O.peak_hour) + ':00', 'peak hour']
+    [hh(O.peak_hour) + ':00', 'peak hour'],
+    [O.total_chat_hours != null ? Math.round(O.total_chat_hours).toLocaleString() + ' h' : 'n/a', 'hours spent chatting']
   ];
 
   const out = $('#out');
@@ -651,7 +652,8 @@ function parseClientWhatsApp(text) {
     per[s] = {
       messages: 0, text_messages: 0, media: 0, deleted: 0, words: 0, chars: 0,
       links: 0, questions: 0, emojis_total: 0, late_night: 0, longest_msg_words: 0,
-      starts: 0, ends: 0, reply: {}, top_words: [], top_emojis: []
+      starts: 0, ends: 0, reply: {}, top_words: [], top_emojis: [],
+      avg_burst: 0, longest_burst: 0
     };
     hourly[s] = Array(24).fill(0);
     weekday[s] = Array(7).fill(0);
@@ -706,23 +708,35 @@ function parseClientWhatsApp(text) {
 
   // Conversation dynamics
   const replies = {};
-  senders.forEach(s => { replies[s] = []; });
+  const bursts = {};
+  senders.forEach(s => { replies[s] = []; bursts[s] = []; });
   let prev = null;
+  let burst = 0;
   for (const m of msgs) {
     if (!prev) {
       per[m.sender].starts++;
+      burst = 1;
     } else {
       const gapSec = (m.dt - prev.dt) / 1000;
       if (gapSec > 6 * 3600) {
         per[m.sender].starts++;
         per[prev.sender].ends++;
-      } else if (m.sender !== prev.sender && gapSec <= 6 * 3600 && gapSec >= 0) {
-        replies[m.sender].push(gapSec);
+        bursts[prev.sender].push(burst);
+        burst = 1;
+      } else if (m.sender !== prev.sender) {
+        if (gapSec >= 0) replies[m.sender].push(gapSec);
+        bursts[prev.sender].push(burst);
+        burst = 1;
+      } else {
+        burst++;
       }
     }
     prev = m;
   }
-  if (prev) per[prev.sender].ends++;
+  if (prev) {
+    per[prev.sender].ends++;
+    bursts[prev.sender].push(burst);
+  }
 
   // Reply statistics
   senders.forEach(s => {
@@ -750,6 +764,8 @@ function parseClientWhatsApp(text) {
     };
     per[s].avg_words_per_msg = per[s].text_messages ? per[s].words / per[s].text_messages : 0;
     per[s].avg_chars_per_msg = per[s].text_messages ? per[s].chars / per[s].text_messages : 0;
+    per[s].avg_burst = bursts[s].length ? sum(bursts[s]) / bursts[s].length : 0;
+    per[s].longest_burst = bursts[s].length ? Math.max(...bursts[s]) : 0;
     per[s].top_words = Object.entries(wordCounts[s]).sort((a, b) => b[1] - a[1]).slice(0, 15);
     per[s].top_emojis = Object.entries(emojiCounts[s]).sort((a, b) => b[1] - a[1]).slice(0, 15);
   });
@@ -798,6 +814,14 @@ function parseClientWhatsApp(text) {
   const topDays = Object.entries(dailyTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const busiestMonth = Object.entries(monthlyTotal).sort((a, b) => b[1] - a[1])[0] || ['n/a', 0];
 
+  // Total hours chatting: sum of active session durations (gaps <= 6h count as chat time)
+  let totalChatSeconds = 0;
+  for (let i = 1; i < msgs.length; i++) {
+    const gap = (msgs[i].dt - msgs[i - 1].dt) / 1000;
+    if (gap <= 6 * 3600) totalChatSeconds += gap;
+  }
+  const totalChatHours = totalChatSeconds / 3600;
+
   const summary = {
     senders,
     overview: {
@@ -817,7 +841,8 @@ function parseClientWhatsApp(text) {
       peak_weekday: peakWd,
       busiest_month: busiestMonth,
       reply_cap_hours: 6,
-      session_gap_hours: 6
+      session_gap_hours: 6,
+      total_chat_hours: totalChatHours
     },
     per_sender: per,
     hourly,
