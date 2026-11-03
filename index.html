@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whatsapp Chat Analyzer</title>
+<link rel="icon" type="image/png" href="whatsapp icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Solid Ribbon Block Navbar -->
+<header class="navbar" role="banner">
+  <div class="navbar-inner">
+    <div class="navbar-brand" aria-label="Whatsapp Chat Analyzer">
+      <img src="whatsapp icon.png" alt="WhatsApp" class="brand-icon" width="28" height="28">
+      <span id="title">Whatsapp Chat Analyzer</span>
+    </div>
+
+    <nav class="navbar-center" aria-label="Main navigation">
+      <a href="#overview" class="nav-link">Overview</a>
+      <a href="#rhythm" class="nav-link">Rhythm</a>
+      <a href="#replies" class="nav-link">Replies</a>
+      <a href="#words" class="nav-link">Words</a>
+    </nav>
+
+    <div class="navbar-actions">
+      <input type="file" id="file-input" accept=".txt" style="display:none">
+      <button id="upload-btn" class="btn btn-secondary" type="button" title="Upload WhatsApp chat .txt file">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Upload Chat
+      </button>
+      <button id="theme-toggle" class="btn btn-icon btn-ghost" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+      <button id="export" class="btn btn-secondary" type="button" title="Download standalone HTML report">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export HTML
+      </button>
+      <button id="refresh" class="btn btn-primary" type="button">Refresh data</button>
+    </div>
+  </div>
+</header>
+
+<!-- Drag and Drop Overlay -->
+<div id="drop-overlay" class="drop-overlay">
+  <div class="drop-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="17 8 12 3 7 8"></polyline>
+      <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+    <h3>Drop WhatsApp Chat File Here</h3>
+    <p>Drop your exported .txt chat file to analyze participants and statistics instantly</p>
+  </div>
+</div>
+
+<!-- Main Content -->
+<main class="main-container" role="main">
+  <!-- Loading & Feedback State -->
+  <div id="state" class="loading-state glass">
+    <div class="spinner" aria-busy="true" aria-label="Loading chat analysis"></div>
+    <p class="text-muted">Loading your chat analysis…</p>
+  </div>
+
+  <!-- Dashboard Output -->
+  <div id="out"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Everything runs on your computer. Your chat never leaves it. Fully private.</p>
+  </footer>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
