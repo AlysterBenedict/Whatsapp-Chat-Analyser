@@ -2,7 +2,7 @@
 
 A fast, privacy-first, zero-dependency analytics dashboard and visualization engine for WhatsApp conversations. Works seamlessly with both **Android** and **iOS** chat exports, dynamically detecting participants, calculating conversation rhythms, reply latency, streak records, word frequencies, and emoji habits.
 
-Deployed live on Firebase: **[https://whatsapp-chat-analyzer-7509c.web.app](https://whatsapp-chat-analyzer-7509c.web.app)**
+Deployed live on Firebase: **[https://whatsapp-chat-analyzer-7509c.web.app](https://whatsapp-chat-analyzer-7509c.web.app)** 
 
 ---
 
