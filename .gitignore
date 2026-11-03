@@ -19,5 +19,8 @@ chat_analysis_output/
 Thumbs.db
 .vscode/
 .idea/
+# Firebase
 .firebaserc
 firebase.json
+.firebase/
+firebase-debug.log
