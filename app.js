@@ -955,7 +955,6 @@ async function load() {
           </svg>
           Upload Chat (.txt)
         </button>
-        <button class="btn btn-secondary" onclick="location.reload()">Refresh</button>
       </div>
       <p class="text-muted" style="margin-top:0.75rem;font-size:0.875rem">You can also drag and drop any exported .txt chat file directly onto this window.</p>
     `, false);
@@ -1014,25 +1013,6 @@ window.addEventListener('paste', e => {
     handleChatTextData(pastedText, 'pasted_chat.txt');
   }
 });
-
-const refreshBtn = $('#refresh');
-if (refreshBtn) {
-  refreshBtn.onclick = async () => {
-    const originalText = refreshBtn.textContent;
-    refreshBtn.disabled = true;
-    refreshBtn.textContent = 'Analysing…';
-    try {
-      const r = await fetch('api/refresh');
-      if (!r.ok) throw new Error('Refresh failed');
-      await load();
-    } catch (e) {
-      note(`Could not refresh chat analysis.<br><small>${esc(e.message)}</small>`, true);
-    } finally {
-      refreshBtn.disabled = false;
-      refreshBtn.textContent = originalText;
-    }
-  };
-}
 
 // Initial load
 load();
