@@ -20,7 +20,7 @@ import csv
 import json
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -356,6 +356,20 @@ def analyze(msgs, reply_cap_h, session_gap_h, top_n, extra_stop):
         p["ends"] = enders[s]
         p["reply"] = reply_stats(replies[s])
 
+    # Total chat hours: sum of session durations (session = messages within session_gap of each other).
+    # Only counts wall-clock time while the conversation was actively live; ignores silence between sessions.
+    _chat_secs = 0
+    _sess_start = msgs[0].dt
+    _sess_last = msgs[0].dt
+    for _m in msgs[1:]:
+        _gap = (_m.dt - _sess_last).total_seconds()
+        if _gap > session_gap:
+            _chat_secs += (_sess_last - _sess_start).total_seconds()
+            _sess_start = _m.dt
+        _sess_last = _m.dt
+    _chat_secs += (_sess_last - _sess_start).total_seconds()
+    total_chat_hours = _chat_secs / 3600
+
     return {
         "senders": senders,
         "overview": {
@@ -369,11 +383,7 @@ def analyze(msgs, reply_cap_h, session_gap_h, top_n, extra_stop):
             "peak_weekday": WEEKDAYS[max(range(7), key=lambda d: overall_wd[d])],
             "busiest_month": monthly_total.most_common(1)[0],
             "reply_cap_hours": reply_cap_h, "session_gap_hours": session_gap_h,
-            "total_chat_hours": sum(
-                min((msgs[i].dt - msgs[i-1].dt).total_seconds(), session_gap)
-                for i in range(1, len(msgs))
-                if (msgs[i].dt - msgs[i-1].dt).total_seconds() <= session_gap
-            ) / 3600,
+            "total_chat_hours": total_chat_hours,
         },
         "per_sender": per,
         "hourly": hourly, "weekday": weekday,
@@ -661,7 +671,7 @@ def main():
     ap.add_argument("file", nargs="?", help="exported WhatsApp chat .txt (auto-detected if omitted)")
     ap.add_argument("--date-order", choices=["dmy", "mdy"], help="force DD/MM or MM/DD (default: auto-detect)")
     ap.add_argument("--reply-cap-hours", type=float, default=6, help="ignore reply gaps longer than this (default 6)")
-    ap.add_argument("--session-gap-hours", type=float, default=6, help="silence that starts a new conversation (default 6)")
+    ap.add_argument("--session-gap-hours", type=float, default=2, help="silence that starts a new conversation (default 2)")
     ap.add_argument("--top", type=int, default=15, help="how many top words/emojis to list (default 15)")
     ap.add_argument("--stopwords", default="", help="extra comma-separated words to ignore in top words")
     ap.add_argument("--out", help="output folder (default: chat_analysis_output next to the chat file)")

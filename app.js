@@ -593,18 +593,22 @@ function parseClientWhatsApp(text) {
     throw new Error('No WhatsApp messages could be parsed from this file.');
   }
 
-  // Detect date order
+  // Detect date order — sample all unique date strings for robustness
   let order = 'dmy';
-  let firstGt12 = false, secondGt12 = false;
-  for (const r of raw) {
-    const p = r.d.split(/[/.\-]/);
-    if (p[0].length === 4) { order = 'ymd'; break; }
+  let firstGt12 = false, secondGt12 = false, foundYmd = false;
+  const seenDates = new Set(raw.map(r => r.d));
+  for (const dateStr of seenDates) {
+    const p = dateStr.split(/[/.-]/);
+    if (p[0].length === 4) { foundYmd = true; break; }
     if (+p[0] > 12) firstGt12 = true;
     if (+p[1] > 12) secondGt12 = true;
   }
-  if (order !== 'ymd') {
-    if (secondGt12) order = 'mdy';
-    else order = 'dmy';
+  if (foundYmd) {
+    order = 'ymd';
+  } else if (firstGt12) {
+    order = 'dmy';
+  } else if (secondGt12) {
+    order = 'mdy';
   }
 
   // Parse timestamps
@@ -706,7 +710,11 @@ function parseClientWhatsApp(text) {
     });
   }
 
-  // Conversation dynamics
+  // ── Constants (single source of truth) ──────────────────────────────────
+  const SESSION_GAP_SEC = 2 * 3600;  // 2 hours — new conversation threshold
+  const REPLY_CAP_SEC   = 6 * 3600;  // ignore replies after 6h gap
+
+  // ── Conversation dynamics: bursts, replies, starts/ends ─────────────────
   const replies = {};
   const bursts = {};
   senders.forEach(s => { replies[s] = []; bursts[s] = []; });
@@ -718,13 +726,15 @@ function parseClientWhatsApp(text) {
       burst = 1;
     } else {
       const gapSec = (m.dt - prev.dt) / 1000;
-      if (gapSec > 6 * 3600) {
+      if (gapSec > SESSION_GAP_SEC) {
+        // New session: close previous session's burst, record start/end
         per[m.sender].starts++;
         per[prev.sender].ends++;
         bursts[prev.sender].push(burst);
         burst = 1;
       } else if (m.sender !== prev.sender) {
-        if (gapSec >= 0) replies[m.sender].push(gapSec);
+        // Turn change within session: record reply (capped) and close burst
+        if (gapSec >= 0 && gapSec <= REPLY_CAP_SEC) replies[m.sender].push(gapSec);
         bursts[prev.sender].push(burst);
         burst = 1;
       } else {
@@ -738,9 +748,18 @@ function parseClientWhatsApp(text) {
     bursts[prev.sender].push(burst);
   }
 
-  // Reply statistics
+  // ── Per-sender stats & reply statistics ─────────────────────────────────
+  // Percentile helper using linear interpolation (same as Python's pct())
+  const pctile = (sorted, p) => {
+    if (!sorted.length) return null;
+    const k = (sorted.length - 1) * p / 100;
+    const f = Math.floor(k);
+    const c = Math.min(f + 1, sorted.length - 1);
+    return sorted[f] + (sorted[c] - sorted[f]) * (k - f);
+  };
+
   senders.forEach(s => {
-    const v = replies[s].sort((a, b) => a - b);
+    const v = replies[s].slice().sort((a, b) => a - b);
     const n = v.length;
     const slow = v.filter(x => x >= 60);
     const bk = [0, 0, 0, 0, 0];
@@ -753,17 +772,18 @@ function parseClientWhatsApp(text) {
     });
     per[s].reply = {
       count: n,
-      median: n ? v[Math.floor(n / 2)] : 0,
+      median: pctile(v, 50) ?? 0,
       mean: n ? sum(v) / n : 0,
-      p90: n ? v[Math.floor(n * 0.9)] : 0,
-      after_pause_median: slow.length ? slow[Math.floor(slow.length / 2)] : null,
+      p90: pctile(v, 90) ?? 0,
+      after_pause_median: slow.length ? pctile(slow, 50) : null,
       after_pause_mean: slow.length ? sum(slow) / slow.length : null,
-      after_pause_p90: slow.length ? slow[Math.floor(slow.length * 0.9)] : null,
+      after_pause_p90: slow.length ? pctile(slow, 90) : null,
       same_minute: n ? (v.filter(x => x < 60).length / n) * 100 : 0,
       buckets: n ? bk.map(b => (b / n) * 100) : [0, 0, 0, 0, 0]
     };
     per[s].avg_words_per_msg = per[s].text_messages ? per[s].words / per[s].text_messages : 0;
     per[s].avg_chars_per_msg = per[s].text_messages ? per[s].chars / per[s].text_messages : 0;
+    per[s].peak_hour = hourly[s].indexOf(Math.max(...hourly[s]));
     per[s].avg_burst = bursts[s].length ? sum(bursts[s]) / bursts[s].length : 0;
     per[s].longest_burst = bursts[s].length ? Math.max(...bursts[s]) : 0;
     per[s].top_words = Object.entries(wordCounts[s]).sort((a, b) => b[1] - a[1]).slice(0, 15);
@@ -782,14 +802,15 @@ function parseClientWhatsApp(text) {
   const lastD = new Date(sortedDates[sortedDates.length - 1]);
   const spanDays = Math.max(1, Math.round((lastD - firstD) / 864e5) + 1);
 
-  // Streaks
-  let streak = 1, maxStreak = 1;
+  // Streaks + longest silence
+  let streak = 1, maxStreak = 1, longestSilence = 0;
   for (let i = 1; i < sortedDates.length; i++) {
     const diff = Math.round((new Date(sortedDates[i]) - new Date(sortedDates[i - 1])) / 864e5);
     if (diff === 1) {
       streak++;
       if (streak > maxStreak) maxStreak = streak;
     } else {
+      longestSilence = Math.max(longestSilence, diff - 1);
       streak = 1;
     }
   }
@@ -814,12 +835,20 @@ function parseClientWhatsApp(text) {
   const topDays = Object.entries(dailyTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const busiestMonth = Object.entries(monthlyTotal).sort((a, b) => b[1] - a[1])[0] || ['n/a', 0];
 
-  // Total hours chatting: sum of active session durations (gaps <= 6h count as chat time)
+  // Total hours chatting: sum of session durations (session = gap <= SESSION_GAP_SEC)
+  // Counts wall-clock time the conversation was actively live; ignores inter-session silence.
   let totalChatSeconds = 0;
+  let sessStart = msgs[0].dt;
+  let sessLast = msgs[0].dt;
   for (let i = 1; i < msgs.length; i++) {
-    const gap = (msgs[i].dt - msgs[i - 1].dt) / 1000;
-    if (gap <= 6 * 3600) totalChatSeconds += gap;
+    const gap = (msgs[i].dt - sessLast) / 1000;
+    if (gap > SESSION_GAP_SEC) {
+      totalChatSeconds += (sessLast - sessStart) / 1000;
+      sessStart = msgs[i].dt;
+    }
+    sessLast = msgs[i].dt;
   }
+  totalChatSeconds += (sessLast - sessStart) / 1000; // close last session
   const totalChatHours = totalChatSeconds / 3600;
 
   const summary = {
@@ -836,12 +865,12 @@ function parseClientWhatsApp(text) {
       words_per_day: sum(senders.map(s => per[s].words)) / spanDays,
       longest_daily_streak: maxStreak,
       streak_ended: sortedDates[sortedDates.length - 1],
-      longest_silence_days: 0,
+      longest_silence_days: longestSilence,
       peak_hour: peakHour,
       peak_weekday: peakWd,
       busiest_month: busiestMonth,
       reply_cap_hours: 6,
-      session_gap_hours: 6,
+      session_gap_hours: 2,
       total_chat_hours: totalChatHours
     },
     per_sender: per,
