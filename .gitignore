@@ -24,3 +24,6 @@ Thumbs.db
 firebase.json
 .firebase/
 firebase-debug.log
+
+# Documentation & Notes
+TECHNICAL_DEEP_DIVE.md
