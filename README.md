@@ -15,7 +15,7 @@ Deployed live on Firebase: **[https://whatsapp-chat-analyzer-7509c.web.app](http
   - Or simply copy the chat file/text and press `Ctrl + V` anywhere on the page.
 - **Universal WhatsApp Format Support**:
   - **Android format**: `12/03/24, 9:45 pm - Name: Message`
-  - **iOS format**: `[12/03/24, 09:45:12 PM] Name: Message`
+  - **iOS format**: `[12/03/24, 09:45:12 PM] Name: Message` 
   - Handles 12-hour (AM/PM) and 24-hour clocks, multi-line messages, attachments, media omission flags, and invisible Unicode direction marks (LRM/RLM).
 - **Comprehensive Metrics & Deep Insights**:
   - **Overall KPIs**: Total messages, words exchanged, messages per day, active chatting days, longest streak, peak chat hour.
