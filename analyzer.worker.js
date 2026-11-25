@@ -666,21 +666,25 @@
     try {
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return null;
       if (typeof location !== 'undefined' && location.protocol === 'file:') return null;
-      onProgress(40, 'Loading in-browser Transformers.js neural model (WebGPU/WASM)...');
-      const tf = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0');
-      let device = 'wasm';
-      if (typeof navigator !== 'undefined' && navigator.gpu) {
-        try {
-          const adapter = await navigator.gpu.requestAdapter();
-          if (adapter) device = 'webgpu';
-        } catch (_) {}
-      }
-      const extractor = await tf.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8', device });
+      const deadline = Date.now() + 30000;
+      const withTimeout = (p, ms) => Promise.race([
+        p,
+        new Promise((_, rej) => setTimeout(() => rej(new Error('Neural AI timeout')), ms)),
+      ]);
+
+      onProgress(40, 'Loading in-browser Transformers.js neural model (WASM)...');
+      const tf = await withTimeout(import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0'), 15000);
+      const device = 'wasm';
+      const extractor = await withTimeout(
+        tf.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8', device }),
+        15000
+      );
       const encodeList = async (texts) => {
         const res = [];
         for (let i = 0; i < texts.length; i += 64) {
+          if (Date.now() > deadline) throw new Error('Neural AI time budget exceeded');
           const slice = texts.slice(i, i + 64);
-          const out = await extractor(slice, { pooling: 'mean', normalize: true });
+          const out = await withTimeout(extractor(slice, { pooling: 'mean', normalize: true }), 12000);
           const data = out.data;
           const dim = out.dims[1];
           for (let r = 0; r < slice.length; r++) {
@@ -699,15 +703,15 @@
       const intProtos = {};
       for (const [k, sents] of Object.entries(INTENT_PROTOTYPES)) intProtos[k] = meanVec(await encodeList(sents));
 
-      // Deduplicate all candidate strings
+      // Deduplicate all candidate strings (cap at 600 & sort by length for minimal padding)
       const uniqueMap = new Map();
-      const allNeed = new Set([...ambiguousIdx, ...photoCandIdx, ...missCandIdx, ...meetCandIdx]);
-      const cappedNeed = [...allNeed].slice(0, 2600);
+      const allNeed = new Set([...photoCandIdx, ...missCandIdx, ...meetCandIdx, ...ambiguousIdx]);
+      const cappedNeed = [...allNeed].slice(0, 600);
       for (const idx of cappedNeed) {
         const txt = msgs[idx].text.slice(0, 220);
         if (!uniqueMap.has(txt)) uniqueMap.set(txt, null);
       }
-      const uTexts = [...uniqueMap.keys()];
+      const uTexts = [...uniqueMap.keys()].sort((a, b) => a.length - b.length);
       if (uTexts.length) {
         const uVecs = await encodeList(uTexts);
         uTexts.forEach((t, k) => uniqueMap.set(t, uVecs[k]));
