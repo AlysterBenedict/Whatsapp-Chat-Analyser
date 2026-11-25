@@ -3,62 +3,84 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Whatsapp Chat Analyzer</title>
+<title>WhatsApp Chat Analyzer</title>
 <link rel="icon" type="image/png" href="whatsapp icon.png">
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = saved || (prefersDark ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- Solid Ribbon Block Navbar -->
 <header class="navbar" role="banner">
   <div class="navbar-inner">
-    <div class="navbar-brand" aria-label="Whatsapp Chat Analyzer">
-      <img src="whatsapp icon.png" alt="WhatsApp" class="brand-icon" width="28" height="28">
-      <span id="title">Whatsapp Chat Analyzer</span>
+    <div class="navbar-brand" aria-label="WhatsApp Chat Analyzer">
+      <img src="whatsapp icon.png" alt="WhatsApp" class="brand-icon" width="24" height="24">
+      <span id="title">WhatsApp Chat Analyzer</span>
     </div>
 
     <nav class="navbar-center" aria-label="Main navigation">
       <a href="#overview" class="nav-link">Overview</a>
+      <a href="#vibes" class="nav-link">Vibes</a>
+      <a href="#apologies" class="nav-link">Apologies</a>
+      <a href="#intimacy" class="nav-link">Intimacy</a>
       <a href="#rhythm" class="nav-link">Rhythm</a>
-      <a href="#replies" class="nav-link">Replies</a>
       <a href="#words" class="nav-link">Words</a>
+      <a href="#fun" class="nav-link">Trophies</a>
     </nav>
 
     <div class="navbar-actions">
       <input type="file" id="file-input" accept=".txt" style="display:none">
+      <div class="nav-toggles" role="group" aria-label="Analysis options">
+        <button id="ai-toggle" class="btn btn-toggle active" type="button" aria-pressed="true" title="Toggle in-browser Transformers.js WebGPU/WASM neural disambiguation">AI Boost</button>
+        <button id="blur-toggle" class="btn btn-toggle active" type="button" aria-pressed="true" title="Blur or reveal sensitive quotes in this session">Blur On</button>
+      </div>
+      <button id="wrapped-btn" class="btn btn-ghost" type="button" title="Launch Chat Wrapped interactive story reel" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="6 3 20 12 6 21 6 3"></polygon>
+        </svg>
+        <span class="lbl">Wrapped</span>
+      </button>
+      <span class="nav-sep" aria-hidden="true"></span>
       <button id="upload-btn" class="btn btn-secondary" type="button" title="Upload WhatsApp chat .txt file">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="17 8 12 3 7 8"></polyline>
           <line x1="12" y1="3" x2="12" y2="15"></line>
         </svg>
-        Upload Chat
+        <span class="lbl">Upload</span>
       </button>
-      <button id="theme-toggle" class="btn btn-icon btn-ghost" aria-label="Toggle theme" title="Toggle theme">
-        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      </button>
-      <button id="export" class="btn btn-primary" type="button" title="Download standalone HTML report">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <button id="export" class="btn btn-primary" type="button" title="Download secure always-blurred HTML report">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
           <polyline points="7 10 12 15 17 10"></polyline>
           <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
-        Export HTML
+        <span class="lbl">Export</span>
+      </button>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2"></path>
+          <path d="M12 20v2"></path>
+          <path d="m4.93 4.93 1.41 1.41"></path>
+          <path d="m17.66 17.66 1.41 1.41"></path>
+          <path d="M2 12h2"></path>
+          <path d="M20 12h2"></path>
+          <path d="m6.34 17.66-1.41 1.41"></path>
+          <path d="m19.07 4.93-1.41 1.41"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
       </button>
     </div>
   </div>
@@ -66,34 +88,139 @@
 
 <!-- Drag and Drop Overlay -->
 <div id="drop-overlay" class="drop-overlay">
-  <div class="drop-box">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <div class="drop-box card">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="17 8 12 3 7 8"></polyline>
       <line x1="12" y1="3" x2="12" y2="15"></line>
     </svg>
-    <h3>Drop WhatsApp Chat File Here</h3>
-    <p>Drop your exported .txt chat file to analyze participants and statistics instantly</p>
+    <h3>Drop WhatsApp Chat File</h3>
+    <p>100% browser memory processing with optional WebGPU/WASM neural disambiguation.</p>
+  </div>
+</div>
+
+<!-- Wrapped Story Modal -->
+<div id="wrapped-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-label="Chat Wrapped Story">
+  <div class="wrapped-shell card modal-card">
+    <div class="wrapped-progress" id="wrapped-dots"></div>
+    <button type="button" class="modal-close" id="wrapped-close" aria-label="Close Wrapped">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+      </svg>
+    </button>
+    <div id="wrapped-stage" class="wrapped-stage"></div>
+    <div class="wrapped-nav">
+      <button type="button" class="btn btn-secondary" id="wrapped-prev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m15 18-6-6 6-6"></path>
+        </svg>
+        Prev
+      </button>
+      <span id="wrapped-counter" class="text-muted">1 / 6</span>
+      <button type="button" class="btn btn-primary" id="wrapped-next">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- Secure Always-Blurred Export Modal -->
+<div id="export-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-label="Secure HTML Export">
+  <div class="export-shell card modal-card">
+    <button type="button" class="modal-close" id="export-close" aria-label="Close Export Dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+      </svg>
+    </button>
+    <h2>Secure Standalone Export</h2>
+    <p class="text-muted">Sensitive content is <strong>always blurred</strong> in every exported HTML report so intimate lines never appear exposed.</p>
+
+    <div class="export-options">
+      <label class="export-opt selected">
+        <input type="radio" name="export-mode" value="encrypted" checked>
+        <div>
+          <strong>Passphrase-Encrypted Blurred Export (AES-256-GCM · Recommended)</strong>
+          <small>Zero sensitive plaintext exists in the exported HTML file. Sensitive quotes stay blurred until unlocked in memory with your passphrase.</small>
+        </div>
+      </label>
+      <label class="export-opt">
+        <input type="radio" name="export-mode" value="redacted">
+        <div>
+          <strong>Permanently Masked Blurred Export (Quick Share)</strong>
+          <small>Irreversibly redacts all sensitive quotes before exporting. Permanently blurred — zero sensitive text anywhere in the file.</small>
+        </div>
+      </label>
+    </div>
+
+    <label class="export-check">
+      <input type="checkbox" id="export-blur-intimacy" checked>
+      <span>Also protect longest messages, pet names &amp; intimacy quotes (recommended)</span>
+    </label>
+
+    <div id="export-pass-wrap" class="export-pass-wrap">
+      <label for="export-passphrase">Encryption Passphrase (min 4 characters):</label>
+      <input type="password" id="export-passphrase" placeholder="Enter a secret passphrase..." autocomplete="new-password">
+      <small id="export-error" class="export-err" hidden></small>
+    </div>
+
+    <div class="export-actions">
+      <button type="button" class="btn btn-secondary" id="export-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="export-confirm">Download Blurred HTML</button>
+    </div>
+  </div>
+</div>
+
+<!-- Passphrase Unlock Modal (used inside exported HTML reports) -->
+<div id="unlock-modal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-label="Unlock Sensitive Quotes">
+  <div class="export-shell card modal-card">
+    <button type="button" class="modal-close" id="unlock-close" aria-label="Close Unlock Dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18"></path>
+        <path d="m6 6 12 12"></path>
+      </svg>
+    </button>
+    <h2>Unlock Encrypted Quotes</h2>
+    <p class="text-muted">Enter the export passphrase to decrypt sensitive quotes in browser memory (AES-256-GCM).</p>
+    <div class="export-pass-wrap">
+      <input type="password" id="unlock-passphrase" placeholder="Enter passphrase...">
+      <small id="unlock-error" class="export-err" hidden></small>
+    </div>
+    <div class="export-actions">
+      <button type="button" class="btn btn-secondary" id="unlock-cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="unlock-confirm">Decrypt &amp; Reveal</button>
+    </div>
   </div>
 </div>
 
 <!-- Main Content -->
 <main class="main-container" role="main">
-  <!-- Loading & Feedback State -->
-  <div id="state" class="loading-state glass">
+  <div id="state" class="card state-card">
     <div class="spinner" aria-busy="true" aria-label="Loading chat analysis"></div>
-    <p class="text-muted">Loading your chat analysis…</p>
+    <p class="text-muted">Loading your chat analysis...</p>
   </div>
 
-  <!-- Dashboard Output -->
   <div id="out"></div>
 
-  <!-- Footer -->
   <footer class="footer">
-    <p><strong>Privacy Assurance:</strong> The deployed app is 100% client-side. When visitors drag, drop, or paste a WhatsApp chat .txt file, all analysis happens in their browser memory; no personal chat messages or data are ever transmitted to or stored on any server.</p>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </span>
+        <div>
+          <strong>Privacy assured · processed locally</strong>
+          <p>The web app is 100% client-side. When you drag, drop, or paste a WhatsApp chat <code>.txt</code> file, all parsing and neural disambiguation happen strictly inside your browser memory; no personal chat messages or data are ever transmitted to or stored on any server.</p>
+        </div>
+      </div>
+      <div class="footer-meta">Generated in your browser</div>
+    </div>
   </footer>
 </main>
 
+<script src="analyzer.worker.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
